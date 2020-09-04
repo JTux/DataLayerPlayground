@@ -1,4 +1,4 @@
-﻿namespace DataPlayground.Migrations
+﻿namespace ExtraInheritance.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
@@ -19,7 +19,7 @@
                     })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.LiquorEntities", t => t.LiquorId, cascadeDelete: true)
-                .ForeignKey("dbo.SpecificLiquorEntities", t => t.SpecificId, cascadeDelete: false)
+                .ForeignKey("dbo.LiquorEntities", t => t.SpecificId, cascadeDelete: false)
                 .ForeignKey("dbo.CocktailEntities", t => t.CocktailId, cascadeDelete: true)
                 .Index(t => t.CocktailId)
                 .Index(t => t.LiquorId)
@@ -43,20 +43,13 @@
                         Id = c.Int(nullable: false, identity: true),
                         Type = c.String(nullable: false),
                         SubType = c.String(),
-                    })
-                .PrimaryKey(t => t.Id);
-            
-            CreateTable(
-                "dbo.SpecificLiquorEntities",
-                c => new
-                    {
-                        Id = c.Int(nullable: false, identity: true),
-                        LiquorId = c.Int(nullable: false),
-                        Brand = c.String(nullable: false),
-                        CountryOfOrigin = c.String(nullable: false),
+                        LiquorId = c.Int(),
+                        Brand = c.String(),
+                        CountryOfOrigin = c.String(),
+                        Discriminator = c.String(nullable: false, maxLength: 128),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.LiquorEntities", t => t.LiquorId, cascadeDelete: true)
+                .ForeignKey("dbo.LiquorEntities", t => t.LiquorId)
                 .Index(t => t.LiquorId);
             
             CreateTable(
@@ -75,15 +68,14 @@
         public override void Down()
         {
             DropForeignKey("dbo.LiquorUses", "CocktailId", "dbo.CocktailEntities");
-            DropForeignKey("dbo.LiquorUses", "SpecificId", "dbo.SpecificLiquorEntities");
-            DropForeignKey("dbo.SpecificLiquorEntities", "LiquorId", "dbo.LiquorEntities");
+            DropForeignKey("dbo.LiquorUses", "SpecificId", "dbo.LiquorEntities");
             DropForeignKey("dbo.LiquorUses", "LiquorId", "dbo.LiquorEntities");
-            DropIndex("dbo.SpecificLiquorEntities", new[] { "LiquorId" });
+            DropForeignKey("dbo.LiquorEntities", "LiquorId", "dbo.LiquorEntities");
+            DropIndex("dbo.LiquorEntities", new[] { "LiquorId" });
             DropIndex("dbo.LiquorUses", new[] { "SpecificId" });
             DropIndex("dbo.LiquorUses", new[] { "LiquorId" });
             DropIndex("dbo.LiquorUses", new[] { "CocktailId" });
             DropTable("dbo.UserEntities");
-            DropTable("dbo.SpecificLiquorEntities");
             DropTable("dbo.LiquorEntities");
             DropTable("dbo.CocktailEntities");
             DropTable("dbo.LiquorUses");
